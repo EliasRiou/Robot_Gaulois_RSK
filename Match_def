@@ -1,0 +1,21 @@
+import rsk
+from defense.defense_joueur import routine_defence
+from attaque.attaque_joueur import routine_attaque
+from routineGreen1 import attaquant_green
+from routineGreen2 import defenseur_green
+from routineBlue1 import attaquant_blue
+from routineBlue2 import defenseur_blue
+
+
+
+
+
+
+with rsk.Client(host='127.0.0.1', key='') as client:
+    while True:
+        try:
+            defenseur_green() #changer couleur en fonction du coté: green = droite du terrain, blue = gauche
+        except:
+            print("error")
+    
+
