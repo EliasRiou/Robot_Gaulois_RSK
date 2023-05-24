@@ -1,5 +1,5 @@
 
-from utils.helpers import distance_ennemie, ennemie_le_plus_près, suivre_balle
+from utils.helpers import distance_ennemie, ennemie_le_plus_près, suivre_balle, position_defenseur
 from attaque.attaque_joueur import positionnement_kick
 from attaque.attaque_joueur import goto_kick
 import math
@@ -25,6 +25,7 @@ def balle_mouvement(client): #Retourne True si la balle est en mouvement ( > 0.2
     return True 
 
 
+    
 def prediction_balle(client,equipe,defenceur):
     xball, yball = client.ball
     xrobot,yrobot = defenceur.position
@@ -62,7 +63,7 @@ def goal_volant(client,equipe,defenceur):
                 att_arrive = defenceur.goto((x,y,math.pi + theta))
                 arrive = att_arrive
             return True
-    if equipe == -1:
+    elif equipe == -1:
         if xball > -0.45 or xball<-0.515 and xball>-0.915: #marche pas chez l'aversaire
             distance_x = xball + 0.45
             pourcentage = distance_x/1.365
@@ -83,45 +84,34 @@ def routine_defence(client, equipe,direction_regard,defenceur,enemie,attaquant):
     # il faut copier le code pour l'equipe -1
     # la prédisction ne marche et bloque le robot
     if equipe == 1:
-
                 #BUT POTENTIEL /!\ 1 time.sleep 0.2
         
         y_but_potentiel = prediction_balle(client,equipe,defenceur) #1 time.sleep 0.2
-        if abs(y_but_potentiel) < 0.3:
-            arrive = False
-            while not arrive == True:
-                att_arrive = defenceur.goto((0.915*equipe,y_but_potentiel,math.pi*direction_regard))
-                arrive = att_arrive
-            return
+        # if abs(y_but_potentiel) < 0.3:
+        #     print("yo")
+        #     arrive = False
+        #     while not arrive == True:
+        #         att_arrive = defenceur.goto((0.915*equipe,y_but_potentiel,math.pi*direction_regard))
+        #         arrive = att_arrive
+        #     return
 
         #SURFACE DE REPARATION
 
-        if xball > 0.515  and abs(yball) < 0.45: #quand le x de la balle passe le x de la surface de réparation et y surface rep    /!\ N'est pas le même opur equipe = -1
-            # print("surface de reparation")
-            if balle_mouvement(client) == False:
-                positionnement_kick(client, equipe, defenceur, direction_regard, enemie) #crash ici
-                goto_kick(client, equipe, defenceur, direction_regard, enemie)
-                # print("degagement lent")
-                return
-            elif vitesse_balle(client) < 0.7: #Pour que le goal réagisse plus vite à la balle : en dessous de 0.7 m/s je considère que ce n'est plus un tir et que le mieux à faire et de lui foncer dessus
-                start_time = time.monotonic() #Pendant 0.3 secondes
-                # print("go_to_rapide")
-                while (time.monotonic()-start_time)<0.3: #Test pour forcer le goal à garder un comportement pendant une durée
-                    # print(time.time())
-                    xball,yball = client.ball
-                    x = xball - 0.0823 #un peu derrière pour pouvoir la pousser dans le bon sens (ou ratrapper le retard caméra)
-                    y = yball 
-                    z = math.pi*direction_regard
-                    att_arrive = defenceur.goto((x,y,z))
-                    arrive = att_arrive
-                return
+        while xball > 0.515  and abs(yball) < 0.45: #quand le x de la balle passe le x de la surface de réparation et y surface rep    /!\ N'est pas le même opur equipe = -1
+            xball, yball = client.ball
+            print("surface de reparation")
+            positionnement_kick(client, equipe, defenceur, direction_regard, enemie) #crash ici
+            goto_kick(client, equipe, defenceur, direction_regard, enemie)
+            print("degagement lent")
+            xball, yball = client.ball  
+            
             
 
         #DEGAGEMENT ATTAQUANT PREEMPTER
 
-        if distance_ennemie(client, enemie) > 0.2 and abs(attaquant.position[1]) >0.58: #Degagement
-                goto_kick(client,equipe,defenceur,direction_regard,enemie)
-                return
+        # if distance_ennemie(client, enemie) > 0.2 and abs(attaquant.position[1]) >0.58: #Degagement
+        #     goto_kick(client,equipe,defenceur,direction_regard,enemie)
+        #     return
                
         if abs(client.robots[enemie][ennemie_le_plus_près(client,enemie)].position[1]) >0.58 and abs(attaquant.position[1]) >0.58: #Degagement
             goto_kick(client,equipe,defenceur,direction_regard,enemie)
@@ -131,15 +121,14 @@ def routine_defence(client, equipe,direction_regard,defenceur,enemie,attaquant):
         
 
         #GOAL VOLANT
+        try:
+            if goal_volant(client,equipe,direction_regard,defenceur) != False:
+                goal_volant(client,equipe,direction_regard,defenceur)
+                return
+        except:
+            print("yuo")
+        position_defenseur(client,equipe,direction_regard,defenceur,enemie)
 
-        if goal_volant(client,equipe,direction_regard,defenceur) != False:
-
-            goal_volant(client,equipe,direction_regard,defenceur)
-            return
-        suivre_balle(client,equipe,direction_regard,defenceur)
-         
-
-        
 
 
         
@@ -171,7 +160,6 @@ def routine_defence(client, equipe,direction_regard,defenceur,enemie,attaquant):
                 return
             elif vitesse_balle(client) < 0.7: #Pour que le goal réagisse plus vite à la balle : en dessous de 0.7 m/s je considère que ce n'est plus un tir et que le mieux à faire et de lui foncer dessus
                 start_time = time.monotonic()
-                # print("go_to_rapide")
                 while (time.monotonic()-start_time)<0.3: #Test pour forcer le goal à garder un comportement pendant une durée
                     xball,yball = client.ball
                     x = xball - 0.0823 #un peu derrière pour pouvoir la pousser dans le bon sens (ou ratrapper le retard caméra)

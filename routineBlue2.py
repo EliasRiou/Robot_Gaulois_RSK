@@ -4,10 +4,10 @@ import rsk
 from defense.defense_joueur import routine_defence
 from defense.defense_joueur import goal_volant
 
-with rsk.Client(host='192.168.0.101', key='') as client:
+with rsk.Client(host='127.0.0.1', key='') as client:
 
     #setup
-    equipe = 1 #ou -1 si on joue du coté gauche, le coté négatif du terrain
+    equipe = -1 #ou -1 si on joue du coté gauche, le coté négatif du terrain
     if equipe > 0:
         direction_regard = 1 #robot fait face au coté négatif du terrain (angle = pi)
     if equipe < 0: 

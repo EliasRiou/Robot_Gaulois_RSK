@@ -2,9 +2,7 @@ import rsk
 
 from defense.defense_joueur import routine_defence
 from defense.defense_joueur import goal_volant
-
-
-with rsk.Client(host='192.168.0.101', key='') as client:
+with rsk.Client(host='127.0.0.1', key='') as client:
 
     
         equipe = 1 #ou -1 si on joue du coté gauche, le coté négatif du terrain
@@ -19,8 +17,6 @@ with rsk.Client(host='192.168.0.101', key='') as client:
         
         while True: #le match
             try:
-                print(defenceur.position)
-                print(goal_volant(client,equipe,defenceur))
                 routine_defence(client, equipe,direction_regard,defenceur,enemie,attaquant)
             except:
                 print("error Green2")

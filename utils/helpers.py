@@ -1,5 +1,5 @@
 import math
-
+import numpy as np
 def suivre_balle_regard(client, equipe, direction_regard,robot,enemie): 
     xball, yball = client.ball
 
@@ -27,11 +27,38 @@ def suivre_balle(client, equipe, direction_regard,robot): #ajouter limite des ca
     xball, yball = client.ball
     xrob, yrob = robot.position
     robot.goto((equipe*0.915,yball,(direction_regard*math.pi)))
-    return
-    
-    
+
+#Quand l'adverser possède la balle alors le robot defenseur se place sur la trajectoire selon l'angle du joueur adverse
+def position_defenseur(client, equipe, direction_regard, robot, enemie):
+    direction_regard = direction_regard*math.pi
+    xball, yball = client.ball
+    xadv1, yadv1 = client.robots[enemie][1].position #on récupère la position des robots adverse
+    xadv2, yadv2 = client.robots[enemie][2].position
+    xdis1 = xadv1 - xball
+    ydis1 = yadv1 - yball
+    xdis2 = xadv2 - xball
+    ydis2 = yadv2 - yball  #mesure de la distance x,y des deux robot par rapport à la balle -> pythagore
+    dis1 = math.sqrt(xdis1**2+ydis1**2)
+    dis2 = math.sqrt(xdis2**2+ydis2**2)
+    if dis1 < dis2: #on prend le robot le plus proche de la balle
+        xadv, yadv = xadv1, yadv1
+    else:
+        xadv, yadv = xadv2, yadv2
+    xdef, ydef = robot.position #on récupère la position du robot défenseur
+    x, y = xadv - xball, yadv - yball #on récupère la distance entre le robot adverse et la balle
+    if x == 0: #si le robot adverse est sur la trajectoire de la balle
+        x = 0.0001 #on ajoute une valeur pour éviter la division par 0
+    a = y/x #on calcule l'angle de la trajectoire
+    b = yadv - a*xadv #on calcule l'ordonnée à l'origine de la trajectoire
+    ydef = a*xdef + b #on calcule l'ordonnée du robot défenseur sur la trajectoire
+    if abs(ydef - yball) < 0.3: #si le robot défenseur est à moins de 0.3m de la trajectoire
+        robot.goto((xdef, ydef, regarder_balle(direction_regard, (xball, yball), (xdef, ydef)))) #on le fait se placer sur la trajectoire
+    else: #sinon
+        robot.goto((xdef, yball, regarder_balle(direction_regard, (xball, yball), (xdef, yball)))) #on le fait se placer sur la trajectoire
     return
 
+
+    
 def regarder_balle(direction_regard, balle, position_defenseur):
     xball,yball = balle
     xdef,ydef = position_defenseur
